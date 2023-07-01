@@ -15,7 +15,33 @@ export async function nearbySearch() {
     },
   })
 
-  result.data.results.forEach((element) => {
-    console.log({ name: element.name, type: element.types, rate: element.rating })
-  })
+  const places = result.data.results.filter((place) => place.rating)
+  if (places.length === 0) {
+    return null
+  }
+  const target = places[Math.floor(Math.random() * places.length)]
+
+  if (target.place_id) {
+    const place = await client.placeDetails({
+      params: {
+        place_id: target.place_id,
+        language: Language.ja,
+        fields: [
+          'formatted_address',
+          'name',
+          'opening_hours',
+          'rating',
+          'reviews',
+          'types',
+          'url',
+          'user_ratings_total',
+          'website',
+        ],
+        key: apiKey.value(),
+      },
+    })
+
+    return place.data.result
+  }
+  return null
 }
