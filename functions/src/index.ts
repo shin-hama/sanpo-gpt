@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https'
 import * as logger from 'firebase-functions/logger'
 import { nearbySearch } from './places'
 import { chat_gpt35 } from './openai'
+import { lineRouter } from './line'
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -45,3 +46,5 @@ export const attendNearby = onRequest({}, async (req, res) => {
     message: reply,
   })
 })
+
+export const line = onRequest(lineRouter)
