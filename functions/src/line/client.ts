@@ -1,7 +1,8 @@
 import { Client, middleware } from '@line/bot-sdk'
-import { defineSecret, defineString } from 'firebase-functions/params'
+import { RequestHandler } from 'express'
+import { defineString } from 'firebase-functions/params'
 
-const channelAccessToken = defineSecret('LINE_CHANNEL_ACCESS_TOKEN')
+const channelAccessToken = defineString('LINE_CHANNEL_ACCESS_TOKEN')
 const channelSecret = defineString('LINE_CHANNEL_SECRET')
 
 export const getClient = () =>
@@ -9,4 +10,6 @@ export const getClient = () =>
     channelAccessToken: channelAccessToken.value(),
   })
 
-export const lineMiddleware = middleware({ channelSecret: channelSecret as unknown as string })
+export const lineMiddleware: RequestHandler = async (req, res, next) => {
+  await middleware({ channelSecret: channelSecret.value() })(req, res, next)
+}
