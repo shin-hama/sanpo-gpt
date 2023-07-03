@@ -1,27 +1,9 @@
 import * as express from 'express'
-import { getClient, lineMiddleware } from './client'
-import { TextMessage, WebhookEvent } from '@line/bot-sdk'
+import { lineMiddleware } from './client'
+import { WebhookEvent } from '@line/bot-sdk'
+import { replyMessage } from './reply'
 
 const app = express()
-
-const eventHandler = async (event: WebhookEvent) => {
-  if (event.type !== 'message' || event.message.type !== 'text') {
-    return
-  }
-
-  // Process all message related variables here.
-  const { replyToken } = event
-  const { text } = event.message
-
-  // Create a new message.
-  const response: TextMessage = {
-    type: 'text',
-    text,
-  }
-
-  // Reply to the user.
-  await getClient().replyMessage(replyToken, response)
-}
 
 app.post('/webhook', lineMiddleware, async (req, res) => {
   req.body.destination // user ID of the bot (optional)
@@ -30,7 +12,7 @@ app.post('/webhook', lineMiddleware, async (req, res) => {
   const results = await Promise.all(
     events.map(async (event) => {
       try {
-        await eventHandler(event)
+        await replyMessage(event)
         return
       } catch (err: unknown) {
         if (err instanceof Error) {
