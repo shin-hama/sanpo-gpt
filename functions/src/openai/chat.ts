@@ -1,11 +1,9 @@
-import { defineSecret } from 'firebase-functions/params'
 import { Configuration, OpenAIApi } from 'openai'
-
-const apiKey = defineSecret('OPENAI_API_KEY')
+import { openAIApiKey } from '../core/secrets'
 
 export async function chat_gpt35(message: string) {
   const configuration = new Configuration({
-    apiKey: apiKey.value(),
+    apiKey: openAIApiKey.value(),
   })
   const openai = new OpenAIApi(configuration)
 
