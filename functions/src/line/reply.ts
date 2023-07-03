@@ -67,5 +67,16 @@ const textMessageHandler = (message: TextEventMessage): TextMessage => {
   return {
     type: 'text',
     text: 'テキストチャットは現在開発中です。位置情報を送信してください。',
+    quickReply: {
+      items: [
+        {
+          type: 'action',
+          action: {
+            type: 'location',
+            label: 'Send Location',
+          },
+        },
+      ],
+    },
   }
 }
