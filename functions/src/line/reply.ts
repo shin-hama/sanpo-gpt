@@ -31,11 +31,6 @@ export async function replyMessage(event: WebhookEvent) {
 
 const messageHandler = async (event: MessageEvent): Promise<Message | null> => {
   if (event.message.type === 'location') {
-    await getClient().replyMessage(event.replyToken, {
-      type: 'text',
-      text: `${event.message.address} 周辺のスポットを探してみます。少しだけ待っててください。`,
-    })
-
     return await locationMessageHandler(event.message)
   } else if (event.message.type === 'text') {
     return textMessageHandler(event.message)
