@@ -8,7 +8,7 @@ import {
 } from '@line/bot-sdk'
 import { getClient } from './client'
 import { nearbySearch } from '../places'
-import { chat_gpt35 } from '../openai'
+import { summarize_spot } from '../openai'
 
 export async function replyMessage(event: WebhookEvent) {
   if (event.type !== 'message') {
@@ -31,6 +31,11 @@ export async function replyMessage(event: WebhookEvent) {
 
 const messageHandler = async (event: MessageEvent): Promise<Message | null> => {
   if (event.message.type === 'location') {
+    await getClient().replyMessage(event.replyToken, {
+      type: 'text',
+      text: `${event.message.address} 周辺のスポットを探してみます。少しだけ待っててください。`,
+    })
+
     return await locationMessageHandler(event.message)
   } else if (event.message.type === 'text') {
     return textMessageHandler(event.message)
@@ -48,12 +53,8 @@ const locationMessageHandler = async (message: LocationEventMessage): Promise<Te
     }
   }
 
-  const msg = `
-  The following json is a detailed description of a certain spot available on Api. Please summarize this information and introduce yourself to me as a tour attendant.
-
-  ${JSON.stringify(place)}
-  `
-  const reply = await chat_gpt35(msg)
+  const msg = JSON.stringify(place)
+  const reply = await summarize_spot(msg)
 
   return {
     type: 'text',
@@ -62,8 +63,9 @@ const locationMessageHandler = async (message: LocationEventMessage): Promise<Te
 }
 
 const textMessageHandler = (message: TextEventMessage): TextMessage => {
+  console.log(message.text)
   return {
     type: 'text',
-    text: message.text,
+    text: 'テキストチャットは現在開発中です。位置情報を送信してください。',
   }
 }

@@ -1,7 +1,9 @@
 import { Configuration, OpenAIApi } from 'openai'
-import { openAIApiKey } from '../core/secrets'
 
-export async function chat_gpt35(message: string) {
+import { openAIApiKey } from '../core/secrets'
+import { systemPrompt } from '../core/prompt'
+
+export async function summarize_spot(message: string) {
   const configuration = new Configuration({
     apiKey: openAIApiKey.value(),
   })
@@ -9,7 +11,10 @@ export async function chat_gpt35(message: string) {
 
   const chat = await openai.createChatCompletion({
     model: 'gpt-3.5-turbo',
-    messages: [{ role: 'user', content: message }],
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: message },
+    ],
   })
   console.log(chat.data.usage)
 

@@ -6,7 +6,6 @@ import { replyMessage } from './reply'
 const app = express()
 
 app.post('/webhook', lineMiddleware, async (req, res) => {
-  req.body.destination // user ID of the bot (optional)
   const events: WebhookEvent[] = req.body.events
 
   const results = await Promise.all(
@@ -32,9 +31,6 @@ app.post('/webhook', lineMiddleware, async (req, res) => {
     status: 'success',
     results,
   })
-})
-app.get('/hello', (req, res) => {
-  res.json({ message: 'hello' })
 })
 
 export const lineRouter = app
