@@ -9,6 +9,23 @@ import {
 import { getClient } from './client'
 import { attendNearbyPlace } from '../services/attendNearbyPlace'
 import { User, upsertUser } from '../firestore'
+import { parseMessage } from '../openai/chat'
+
+const requestLocationMessage: Message = {
+  type: 'text',
+  text: '位置情報が取得できませんでした。まずは位置情報を共有してください。',
+  quickReply: {
+    items: [
+      {
+        type: 'action',
+        action: {
+          type: 'location',
+          label: 'Send Location',
+        },
+      },
+    ],
+  },
+}
 
 export async function replyMessage(event: WebhookEvent) {
   if (event.type !== 'message') {
@@ -49,16 +66,33 @@ export async function replyMessage(event: WebhookEvent) {
 }
 
 const eventHandler = async (event: MessageEvent): Promise<Message | null> => {
-  const query = messageHandler(event.message)
+  const result = await messageHandler(event.message)
+  if (result?.action === 'find_place') {
+    const { params } = result
+    if (event.source.userId) {
+      const user = await upsertUser(event.source.userId, { ...params })
 
-  if (event.source.userId) {
-    const user = await upsertUser(event.source.userId, { ...query })
+      if (user?.location) {
+        const reply = await attendNearbyPlace(user.location.lat, user.location.lng, user.keywords)
+        if (!reply) {
+          return {
+            type: 'text',
+            text: '見つかりませんでした',
+          }
+        }
 
-    if (user?.location) {
+        return {
+          type: 'text',
+          text: reply.content || 'No Message',
+        }
+      } else {
+        return requestLocationMessage
+      }
+    } else if (params.location) {
       const reply = await attendNearbyPlace(
-        user?.location?.lat,
-        user?.location?.lng,
-        user?.keywords
+        params.location.lat,
+        params.location.lng,
+        params.keywords
       )
       if (!reply) {
         return {
@@ -69,53 +103,77 @@ const eventHandler = async (event: MessageEvent): Promise<Message | null> => {
 
       return {
         type: 'text',
-        text: reply?.content || 'No Message',
+        text: reply.content || 'No Message',
+      }
+    }
+
+    return requestLocationMessage
+  } else if (result?.action === 'reply') {
+    return { type: 'text', text: result.params.message }
+  }
+
+  return requestLocationMessage
+}
+
+type NextAction =
+  | {
+      action: 'find_place'
+      params: Pick<User, 'keywords' | 'location'>
+    }
+  | {
+      action: 'reply'
+      params: { message: string }
+    }
+
+const messageHandler = async (message: EventMessage): Promise<NextAction | null> => {
+  if (message.type === 'location') {
+    return locationMessageHandler(message)
+  } else if (message.type === 'text') {
+    return await textMessageHandler(message)
+  }
+  return null
+}
+
+const locationMessageHandler = (message: LocationEventMessage): NextAction => {
+  return {
+    action: 'find_place',
+    params: {
+      location: {
+        lat: message.latitude,
+        lng: message.longitude,
+      },
+    },
+  }
+}
+
+const textMessageHandler = async (message: TextEventMessage): Promise<NextAction> => {
+  const result = await parseMessage(message.text)
+  console.log(result)
+
+  if (result.finish_reason === 'function_call') {
+    const args = JSON.parse(result.message?.function_call?.arguments || '')
+    console.log(args)
+    if ('keywords' in args) {
+      return {
+        action: 'find_place',
+        params: {
+          keywords: args.keywords,
+        },
       }
     } else {
       return {
-        type: 'text',
-        text: '位置情報が取得できませんでした。まずは位置情報を共有してください。',
-        quickReply: {
-          items: [
-            {
-              type: 'action',
-              action: {
-                type: 'location',
-                label: 'Send Location',
-              },
-            },
-          ],
+        action: 'reply',
+        params: {
+          message: result.message?.content || 'No Message',
         },
       }
     }
-  }
-
-  return null
-}
-
-const messageHandler = (message: EventMessage): Pick<User, 'keywords' | 'location'> | null => {
-  if (message.type === 'location') {
-    const location = locationMessageHandler(message)
+  } else {
     return {
-      location,
-    }
-  } else if (message.type === 'text') {
-    const keywords = textMessageHandler(message)
-    return {
-      keywords,
+      action: 'reply',
+      params: {
+        message: result.message?.content || 'No Message',
+      },
     }
   }
-  return null
-}
-
-const locationMessageHandler = (message: LocationEventMessage): User['location'] => {
-  return {
-    lat: message.latitude,
-    lng: message.longitude,
-  }
-}
-
-const textMessageHandler = (message: TextEventMessage): User['keywords'] => {
-  console.log(message.text)
-  return []
 }
