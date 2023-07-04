@@ -1,1 +1,1 @@
-export { nearbySearch } from './nearby'
+export { nearbySearch } from './api'
