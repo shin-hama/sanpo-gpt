@@ -3,14 +3,14 @@ import { googleMapApiKey } from '../core/secrets'
 
 const client = new Client({})
 
-export async function nearbySearch(lat: number, lng: number, keywords: Array<string>) {
+export async function nearbySearch(lat: number, lng: number, keywords: string) {
   let result
   try {
     result = await client.placesNearby({
       params: {
         location: { lat, lng },
         radius: 200,
-        keyword: keywords.join(' '),
+        keyword: keywords,
         key: googleMapApiKey.value(),
       },
     })
@@ -18,8 +18,6 @@ export async function nearbySearch(lat: number, lng: number, keywords: Array<str
     console.error(e)
     return
   }
-
-  console.log(result.data.results)
 
   const places = result.data.results.filter((place) => place.rating)
   if (places.length === 0) {

@@ -18,7 +18,7 @@ export const nearby = onRequest(
     secrets: [googleMapApiKey],
   },
   async (req, res) => {
-    const result = await nearbySearch(35.658034, 139.701636, ['cafe', 'relax'])
+    const result = await nearbySearch(35.658034, 139.701636, 'cafe,relax')
     res.status(200).json(result)
   }
 )

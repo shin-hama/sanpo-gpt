@@ -30,9 +30,9 @@ const functions: Array<ChatCompletionFunctions> = [
       type: 'object',
       properties: {
         keywords: {
-          type: 'Array<string>',
+          type: 'string',
           description:
-            'The list of text string on which to search, for example: "restaurant" or "123 Main Street". This must be a place name, address, or category of establishments.',
+            'The comma separated list of text string on which to search, for example: "restaurant" or "123 Main Street". This must be a place name, address, or category of establishments.',
         },
       },
     },

@@ -12,8 +12,9 @@ export type User = {
    * User が現在興味を持っているキーワード
    * 現在地周辺でスポット検索する際に利用する
    * キーワードを更新するときは過去のキーワードをすべて上書きする
+   * カンマ区切りの文字列で保存する
    */
-  keywords?: Array<string>
+  keywords?: string
   location?: LatLng
   updatedAt: Date
 }

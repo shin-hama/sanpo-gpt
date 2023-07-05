@@ -11,6 +11,11 @@ import { attendNearbyPlace } from '../services/attendNearbyPlace'
 import { User, upsertUser } from '../firestore'
 import { parseMessage } from '../openai/chat'
 
+// message type が text か location 以外の場合は無視する
+const notSupportedMessage = (message: EventMessage): boolean => {
+  return message.type !== 'text' && message.type !== 'location'
+}
+
 const requestLocationMessage: Message = {
   type: 'text',
   text: '位置情報が取得できませんでした。まずは位置情報を共有してください。',
@@ -32,7 +37,7 @@ export async function replyMessage(event: WebhookEvent) {
     return
   }
 
-  if (event.message.type !== 'location') {
+  if (notSupportedMessage(event.message)) {
     const message: Message = {
       type: 'text',
       text: 'この機能は現在開発中です。位置情報を送信してください。',
@@ -49,6 +54,7 @@ export async function replyMessage(event: WebhookEvent) {
       },
     }
     await getClient().replyMessage(event.replyToken, message)
+    return
   }
 
   const response = await eventHandler(event)
@@ -148,12 +154,10 @@ const locationMessageHandler = (message: LocationEventMessage): NextAction => {
 
 const textMessageHandler = async (message: TextEventMessage): Promise<NextAction> => {
   const result = await parseMessage(message.text)
-  console.log(result)
 
   if (result.finish_reason === 'function_call') {
     const args = JSON.parse(result.message?.function_call?.arguments || '')
-    console.log(args)
-    if ('keywords' in args) {
+    if (typeof args === 'object' && args.keywords && typeof args.keywords === 'string') {
       return {
         action: 'find_place',
         params: {
