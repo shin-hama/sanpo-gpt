@@ -52,7 +52,7 @@ export async function messageEventHandler(
     }
   }
 
-  return await eventHandler(event)
+  return await handlerImpl(event)
 }
 
 const buildResponse = (address: string, keywords: User['keywords']) => {
@@ -61,7 +61,7 @@ const buildResponse = (address: string, keywords: User['keywords']) => {
   return `「${address}」付近の${keywordMsg}おすすめスポットを検索しました。}`
 }
 
-const eventHandler = async (event: MessageEvent): Promise<Message | Message[] | null> => {
+const handlerImpl = async (event: MessageEvent): Promise<Message | Message[] | null> => {
   const result = await messageHandler(event.message)
   if (result?.action === 'find_place') {
     const { params } = result
