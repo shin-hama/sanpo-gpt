@@ -1,15 +1,14 @@
 import {
-  WebhookEvent,
   MessageEvent,
   Message,
   TextEventMessage,
   LocationEventMessage,
   EventMessage,
 } from '@line/bot-sdk'
-import { getClient } from './client'
-import { attendNearbyPlace } from '../services/attendNearbyPlace'
-import { User, upsertUser } from '../firestore'
-import { parseMessage } from '../openai/chat'
+
+import { attendNearbyPlace } from '~/services/attendNearbyPlace'
+import { User, upsertUser } from '~/firestore'
+import { parseMessage } from '~/openai/chat'
 
 // message type が text か location 以外の場合は無視する
 const notSupportedMessage = (message: EventMessage): boolean => {
@@ -32,13 +31,11 @@ const requestLocationMessage: Message = {
   },
 }
 
-export async function replyMessage(event: WebhookEvent) {
-  if (event.type !== 'message') {
-    return
-  }
-
+export async function messageEventHandler(
+  event: MessageEvent
+): Promise<Message | Message[] | null> {
   if (notSupportedMessage(event.message)) {
-    const message: Message = {
+    return {
       type: 'text',
       text: 'この機能は現在開発中です。位置情報を送信してください。',
       quickReply: {
@@ -53,22 +50,9 @@ export async function replyMessage(event: WebhookEvent) {
         ],
       },
     }
-    await getClient().replyMessage(event.replyToken, message)
-    return
   }
 
-  const response = await eventHandler(event)
-
-  if (response === null) {
-    console.warn('Cannot handle message')
-    console.warn(event)
-    return
-  }
-
-  const { replyToken } = event
-
-  // Reply to the user.
-  await getClient().replyMessage(replyToken, response)
+  return await eventHandler(event)
 }
 
 const buildResponse = (address: string, keywords: User['keywords']) => {

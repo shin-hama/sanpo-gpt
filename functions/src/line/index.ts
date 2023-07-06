@@ -1,7 +1,8 @@
 import * as express from 'express'
-import { lineMiddleware } from './client'
 import { WebhookEvent } from '@line/bot-sdk'
-import { replyMessage } from './reply'
+
+import { lineMiddleware } from './client'
+import { webhookHandler } from './webhook'
 
 const app = express()
 
@@ -11,7 +12,7 @@ app.post('/webhook', lineMiddleware, async (req, res) => {
   const results = await Promise.all(
     events.map(async (event) => {
       try {
-        await replyMessage(event)
+        await webhookHandler(event)
         return
       } catch (err: unknown) {
         if (err instanceof Error) {
