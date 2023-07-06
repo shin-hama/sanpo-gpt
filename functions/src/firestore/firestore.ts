@@ -1,9 +1,7 @@
-import { AppOptions, getApps, initializeApp, applicationDefault } from 'firebase-admin/app'
+import { AppOptions, getApps, initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 
-const firebaseConfig: AppOptions = {
-  credential: applicationDefault(),
-}
+const firebaseConfig: AppOptions = {}
 
 if (!getApps().length) {
   initializeApp(firebaseConfig)
