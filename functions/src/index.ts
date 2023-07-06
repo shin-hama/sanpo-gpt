@@ -8,6 +8,7 @@ import { channelAccessToken, channelSecret, googleMapApiKey, openAIApiKey } from
 export const line = onRequest(
   {
     secrets: [channelAccessToken, channelSecret, googleMapApiKey, openAIApiKey],
+    region: 'asia-northeast1',
   },
   lineRouter
 )
