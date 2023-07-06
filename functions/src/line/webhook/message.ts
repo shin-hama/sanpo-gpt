@@ -6,9 +6,9 @@ import {
   EventMessage,
 } from '@line/bot-sdk'
 
-import { attendNearbyPlace } from '~/services/attendNearbyPlace'
-import { User, upsertUser } from '~/firestore'
-import { parseMessage } from '~/openai/chat'
+import { attendNearbyPlace } from '../../services/attendNearbyPlace'
+import { User, upsertUser } from '../../firestore'
+import { parseMessage } from '../../openai/chat'
 
 // message type が text か location 以外の場合は無視する
 const notSupportedMessage = (message: EventMessage): boolean => {

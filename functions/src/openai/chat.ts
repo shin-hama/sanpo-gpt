@@ -1,7 +1,7 @@
 import { ChatCompletionFunctions, Configuration, OpenAIApi } from 'openai'
 
-import { openAIApiKey } from '~/core/secrets'
-import { systemPrompt } from '~/core/prompt'
+import { openAIApiKey } from '../core/secrets'
+import { systemPrompt } from '../core/prompt'
 
 export async function summarize_spot(message: string) {
   const configuration = new Configuration({

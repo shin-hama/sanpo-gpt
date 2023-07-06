@@ -1,8 +1,8 @@
 import { WebhookEvent } from '@line/bot-sdk'
 
-import { getClient } from '~/line/client'
+import { getClient } from '../client'
 import { messageEventHandler } from './message'
-import { deleteUser } from '~/firestore'
+import { deleteUser } from '../../firestore'
 
 export async function webhookHandler(event: WebhookEvent) {
   if (event.type === 'message') {
