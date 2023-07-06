@@ -1,9 +1,10 @@
 import { FirestoreDataConverter, FieldValue } from 'firebase-admin/firestore'
 import { db } from './firestore'
 
-type LatLng = {
+type Location = {
   lat: number
   lng: number
+  address: string
 }
 
 export type User = {
@@ -15,7 +16,7 @@ export type User = {
    * カンマ区切りの文字列で保存する
    */
   keywords?: string
-  location?: LatLng
+  location?: Location
   updatedAt: Date
 }
 const userConverter: FirestoreDataConverter<User> = {

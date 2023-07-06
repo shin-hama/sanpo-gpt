@@ -71,10 +71,17 @@ export async function replyMessage(event: WebhookEvent) {
   await getClient().replyMessage(replyToken, response)
 }
 
-const eventHandler = async (event: MessageEvent): Promise<Message | null> => {
+const buildResponse = (address: string, keywords: User['keywords']) => {
+  const keywordMsg = keywords ? `「${keywords}」に関する` : ''
+
+  return `「${address}」付近の${keywordMsg}おすすめスポットを検索しました。}`
+}
+
+const eventHandler = async (event: MessageEvent): Promise<Message | Message[] | null> => {
   const result = await messageHandler(event.message)
   if (result?.action === 'find_place') {
     const { params } = result
+
     if (event.source.userId) {
       const user = await upsertUser(event.source.userId, { ...params })
 
@@ -87,10 +94,16 @@ const eventHandler = async (event: MessageEvent): Promise<Message | null> => {
           }
         }
 
-        return {
-          type: 'text',
-          text: reply.content || 'No Message',
-        }
+        return [
+          {
+            type: 'text',
+            text: buildResponse(user.location.address, user.keywords),
+          },
+          {
+            type: 'text',
+            text: reply.content || 'No Message',
+          },
+        ]
       } else {
         return requestLocationMessage
       }
@@ -107,10 +120,16 @@ const eventHandler = async (event: MessageEvent): Promise<Message | null> => {
         }
       }
 
-      return {
-        type: 'text',
-        text: reply.content || 'No Message',
-      }
+      return [
+        {
+          type: 'text',
+          text: buildResponse(params.location.address, params.keywords),
+        },
+        {
+          type: 'text',
+          text: reply.content || 'No Message',
+        },
+      ]
     }
 
     return requestLocationMessage
@@ -147,6 +166,7 @@ const locationMessageHandler = (message: LocationEventMessage): NextAction => {
       location: {
         lat: message.latitude,
         lng: message.longitude,
+        address: message.address,
       },
     },
   }
