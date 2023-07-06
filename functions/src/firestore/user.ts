@@ -57,3 +57,7 @@ export async function upsertUser(
   await userCollection.doc(id).set({ ...User, id }, { merge: true })
   return await getUser(id)
 }
+
+export async function deleteUser(id: string) {
+  await userCollection.doc(id).delete()
+}
