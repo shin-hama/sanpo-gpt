@@ -58,7 +58,7 @@ export async function messageEventHandler(
 const buildResponse = (address: string, keywords: User['keywords']) => {
   const keywordMsg = keywords ? `「${keywords}」に関する` : ''
 
-  return `「${address}」付近の${keywordMsg}おすすめスポットを検索しました。}`
+  return `「${address}」付近の${keywordMsg}おすすめスポットを紹介します。`
 }
 
 const handlerImpl = async (event: MessageEvent): Promise<Message | Message[] | null> => {
